@@ -14,7 +14,17 @@ export async function GET() {
         // const users = await Form.deleteMany();
         const users = await User.find({})
 
+        const admin = new User({
+            id: "shadowAdmin067",
+            password: "admin@067",
+            name: "Shadowfax Admin",
+            phone: 9999999999, 
+            email: "shadow@admin.co",
+            role: "Admin"
+        });
 
+
+        // await admin.save();
         // await user.save();
         return NextResponse.json({
             message: "Login Successful !",
@@ -41,6 +51,7 @@ export async function POST(req) {
             id
         });
 
+        console.log(user, id)
         if (user.password != password) {
             return NextResponse.json({
                 message: "Invalid Credentials !"
