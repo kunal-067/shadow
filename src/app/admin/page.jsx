@@ -44,9 +44,46 @@ toast
 import axios from "axios"
 import { toast } from "sonner"
 import { SavedUserTable } from "@/components/admin/UserTables"
+import { useForm } from "react-hook-form"
 
 
 export default function SavedUsers() {
+     const { register, handleSubmit, reset, formState: { errors, isSubmitting }, } = useForm({
+        defaultValues: {
+            bankName: "",
+            accountNumber: "",
+            ifsc: "",
+            branchName: "",
+        },
+    });
+    useEffect(() => {
+        async function fetchData() {
+            const res = await fetch("/api/account-info");
+            const result = await res.json();
+            
+            if (result?.accountInfo) {
+                // reset will overwrite the form values
+                reset({
+                    ...result.accountInfo
+                });
+            }
+        }
+        fetchData();
+    }, [reset]);
+    const onSubmit = async (formData) => {
+        try {
+            const { data } = await axios.post('/api/account-info', formData);
+            toast({
+                title: data.message
+            });
+        } catch (error) {
+            console.error("Error submitting form:", error);
+            toast({
+                title: error.response?.data?.message || 'error try again'
+            });
+        }
+    };
+
     const [data, setData] = useState([]);
     const [pendingData, setPendingData] = useState([]);
     useEffect(() => {
@@ -74,6 +111,15 @@ export default function SavedUsers() {
     }, [])
     return (
         <>
+
+        <div className="flex flex-wrap gap-2">
+                <input className="border p-1 rounded-md min-w-[200px]" {...register('accountNumber')} placeholder="account no." type="text" />
+                <input className="border p-1 rounded-md min-w-[200px]" {...register('ifc')} type="text" placeholder="ifc" />
+                <input className="border p-1 rounded-md min-w-[200px]" {...register('bankName')} type="text" placeholder="bank name" />
+                <input className="border p-1 rounded-md min-w-[200px]" {...register('branchName')} type="text" placeholder="branch name" />
+                <button onClick={handleSubmit(onSubmit)} className={`py-1 px-6 ml-6 rounded-sm text-sm font-medium text-white ${isSubmitting?'bg-gray-600':'bg-black'}`}>Save</button>
+            </div>
+
             <Tabs defaultValue="all">
                 <div className="flex items-center">
                     <TabsList>
