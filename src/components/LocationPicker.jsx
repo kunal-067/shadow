@@ -1,11 +1,11 @@
 "use client";
 
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from "react-leaflet";
 import L from "leaflet";
 import { useEffect, useState } from "react";
 import "leaflet/dist/leaflet.css";
 
-// Fix default Leaflet icon issue
+// ✅ Fix default Leaflet icon issue
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
@@ -16,62 +16,119 @@ L.Icon.Default.mergeOptions({
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 });
 
-// Draggable Marker component
+// ✅ Helper: Get coordinates from pincode
+// ✅ Helper: Get coordinates from pincode
+async function getLocationFromPincode(pincode) {
+  try {
+    // 1. Validate & fetch details from Postal API
+    const res1 = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
+    const data1 = await res1.json();
+
+    if (!data1[0] || data1[0].Status !== "Success") {
+      return { error: "Invalid pincode" };
+    }
+
+    const office = data1[0].PostOffice[0];
+    const locationDetails = {
+      district: office.District,
+      state: office.State,
+      country: office.Country || "India",
+    };
+
+    // 2. First try postalcode-based search
+    let res2 = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&postalcode=${pincode}&country=India&limit=1`
+    );
+    let data2 = await res2.json();
+
+    let coordinates = null;
+    if (data2.length > 0) {
+      coordinates = {
+        lat: parseFloat(data2[0].lat),
+        lng: parseFloat(data2[0].lon),
+      };
+    }
+
+    // 3. Fallback: Search by district + state
+    if (!coordinates) {
+      const query = `${office.District}, ${office.State}, India`;
+      res2 = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+          query
+        )}&limit=1`
+      );
+      data2 = await res2.json();
+      console.log(data2)
+      if (data2.length > 0) {
+        coordinates = {
+          lat: parseFloat(data2[0].lat),
+          lng: parseFloat(data2[0].lon),
+        };
+      }
+    }
+
+    return { ...locationDetails, coordinates };
+  } catch (error) {
+    console.error("Error fetching location:", error);
+    return { error: "Failed to fetch location" };
+  }
+}
+
+
+// ✅ Draggable Marker
 function DraggableMarker({ position, onChange }) {
   const [markerPosition, setMarkerPosition] = useState(position);
 
+  // ✅ Keep marker in sync when `position` prop changes
+  useEffect(() => {
+    setMarkerPosition(position);
+  }, [position]);
+
   useMapEvents({
     click(e) {
-      setMarkerPosition([e.latlng.lat, e.latlng.lng]);
-      onChange(e.latlng);
+      const latlng = [e.latlng.lat, e.latlng.lng];
+      setMarkerPosition(latlng);
+      onChange(latlng);
     },
   });
 
-  return markerPosition ? (
+  return (
     <Marker
       position={markerPosition}
-      draggable={true}
+      draggable
       eventHandlers={{
         dragend: (e) => {
           const latlng = e.target.getLatLng();
-          setMarkerPosition([latlng.lat, latlng.lng]);
-          onChange(latlng);
+          const newPos = [latlng.lat, latlng.lng];
+          setMarkerPosition(newPos);
+          onChange(newPos);
         },
       }}
     />
-  ) : null;
+  );
 }
 
-// Helper: get coordinates from city name
-async function getCoordinatesFromCity(cityName) {
-  try {
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&postalcode=${cityName}&countrycodes=in`
-    );
-    const data = await res.json();
-    console.log(data)
-    if (data.length > 0) {
-      return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
-    }
-  } catch (error) {
-    console.error("Error fetching city coordinates:", error);
-  }
-  return { lat: 28.6328, lng: 77.2197 }; // fallback coordinates (Pune)
-}
 
-export function MapSelector({ city = "Pune", onSelect }) {
-  const [coordinates, setCoordinates] = useState([28.6328, 77.2197]); // default center
+// ✅ Main Component
+export function MapSelector({ pincode = "110001", onSelect }) {
+  const [coordinates, setCoordinates] = useState([28.6328, 77.2197]); // Default Delhi
   const [loading, setLoading] = useState(true);
+  const [locationInfo, setLocationInfo] = useState(null);
 
   useEffect(() => {
     async function fetchCoords() {
       setLoading(true);
-      const coord = await getCoordinatesFromCity(city);
-      if (coord) setCoordinates([coord.lat, coord.lng]);
+      const result = await getLocationFromPincode(pincode);
+
+      if (!result.error && result.coordinates) {
+        setCoordinates([result.coordinates.lat, result.coordinates.lng]);
+        setLocationInfo(result);
+        onSelect?.(result); // send back location info
+      }
       setLoading(false);
     }
     fetchCoords();
-  }, [city]);
+  }, [pincode]);
 
   if (loading) {
     return (
@@ -82,13 +139,46 @@ export function MapSelector({ city = "Pune", onSelect }) {
   }
 
   return (
-    <MapContainer
-      center={coordinates}
-      zoom={13}
-      style={{ height: "300px", width: "100%", borderRadius: "12px" }}
-    >
-      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-      <DraggableMarker position={coordinates} onChange={e=>console.log('done')} />
-    </MapContainer>
+    <div>
+      <MapContainer
+        center={coordinates}
+        zoom={13}
+        style={{ height: "300px", width: "100%", borderRadius: "12px" }}
+        attributionControl={false}
+      >
+
+        {/* ✅ This keeps map in sync with state */}
+        <RecenterMap coordinates={coordinates} />
+
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution="© Valmo Maps"
+        />
+
+        <DraggableMarker
+          position={coordinates}
+          onChange={(pos) =>
+            onSelect?.({ ...locationInfo, coordinates: { lat: pos[0], lng: pos[1] } })
+          }
+        />
+      </MapContainer>
+
+      {locationInfo && (
+        <div className="mt-2 text-sm text-gray-600">
+          📍 {locationInfo.district}, {locationInfo.state}, {locationInfo.country}
+        </div>
+      )}
+    </div>
   );
 }
+
+function RecenterMap({ coordinates }) {
+  const map = useMap();
+  useEffect(() => {
+    if (coordinates) {
+      map.setView(coordinates, 13); // update map center
+    }
+  }, [coordinates, map]);
+  return null;
+}
+

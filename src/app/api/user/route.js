@@ -71,6 +71,16 @@ export async function POST(req) {
         const image = data.get('image');
         const pdf = data.get('pdf');
 
+        let accountInfo = null;
+        const accountInfoStr = data.get("accountInfo");
+        if (accountInfoStr) {
+            try {
+                accountInfo = JSON.parse(accountInfoStr);
+            } catch (err) {
+                console.error("Invalid accountInfo JSON:", err);
+            }
+        }
+
 
         const buffer = Buffer.from(await image.arrayBuffer());
         const bufferPdf = Buffer.from(await pdf.arrayBuffer());
@@ -115,7 +125,7 @@ export async function POST(req) {
             console.log(formId)
             const form = await Form.findById(formId);
             form.active = false;
-            console.log('form is', form)    
+            console.log('form is', form)
             await form.save();
         }
 
@@ -141,7 +151,9 @@ export async function POST(req) {
             fType,
             refundAmount,
             image: uploadedImg,
-            pdf: uploadedPdf
+            pdf: uploadedPdf,
+
+            accountInfo
         })
         await newUser.save();
 

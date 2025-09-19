@@ -3,9 +3,11 @@ import { Button } from '@/components/ui/button'
 import { toast } from 'sonner';
 import axios from 'axios'
 import React, { useEffect, useState } from 'react'
-import { MapSelector } from '@/components/LocationPicker';
-
-
+import dynamic from 'next/dynamic';
+const MapSelector = dynamic(
+  () => import("@/components/LocationPicker").then((mod) => mod.MapSelector),
+  { ssr: false }
+);
 function page() {
 
     const [id, setId] = useState('');
@@ -22,6 +24,7 @@ function page() {
 
     
     const [accountInfo, setAccountInfo] = useState({});
+    const [accountInfo2, setAccountInfo2] = useState({});
 
 
     useEffect(() => {
@@ -31,7 +34,8 @@ function page() {
             setName(name);
             setId(id); setEmail(email); setPhone(phone); setRefundAmount(refundAmount);
             setState(state); setAddress(address); setPinCode(pinCode); setFtype(fType); setStatus(status);
-            setPdf(() => modifyPdfUrl(data.pdf))
+            setPdf(() => modifyPdfUrl(data.pdf));
+            setAccountInfo(data.accountInfo);
         }).catch(err => {
             console.log(err)
         })
@@ -71,7 +75,7 @@ function page() {
     }
 
     return (
-        <div className='pt-14 md:pt-16 flex flex-col justify-center bg-yellow-50'>
+        <div className='pt-14 md:pt-16 flex flex-col items-center justify-center bg-yellow-50'>
             <div className='max-w-[980px] w-full p-2 md:p-4 bg-yellow-50'>
                 <h2 className='text-[28px] p-1 md:text-[42px] font-medium leading-8'>Application No.: {id}</h2>
                 <marquee className='py-3 text-green-900 font-mono text-[16px] md:text-[18px] font-semibold'>Welcome {name || 'Unknown'} - view your application</marquee>
@@ -156,10 +160,10 @@ function page() {
                             <p className='py-3 px-6 w-full border-r min-w-fit'>Branch Name</p>
                         </div>
                         <div className='flex justify-between items-center text-center'>
-                            <p className='py-3 px-6 w-full border-r min-w-fit'>{accountInfo?.accountNumber || ''}</p>
-                            <p className='py-3 px-6 w-full border-r min-w-fit'>{accountInfo?.ifc || ''}</p>
-                            <p className='py-3 px-6 w-full border-r min-w-fit'>{accountInfo?.bankName || ''}</p>
-                            <p className='py-3 px-6 w-full border-r min-w-fit'>{accountInfo?.branchName || ''}</p>
+                            <p className='py-3 px-6 w-full border-r min-w-fit'>{accountInfo?.accountNumber || accountInfo2?.accountNumber || ''}</p>
+                            <p className='py-3 px-6 w-full border-r min-w-fit'>{accountInfo?.ifc || accountInfo2?.ifc || ''}</p>
+                            <p className='py-3 px-6 w-full border-r min-w-fit'>{accountInfo?.bankName || accountInfo2?.bankName || ''}</p>
+                            <p className='py-3 px-6 w-full border-r min-w-fit'>{accountInfo?.branchName || accountInfo2?.branchName  || ''}</p>
                         </div>
                     </div>
                 </div>
@@ -172,7 +176,7 @@ function page() {
                     </a>
                 </div>
 
-                 <MapSelector city={pinCode} />
+                 <MapSelector pincode={pinCode} />
             </div>
 
         </div>

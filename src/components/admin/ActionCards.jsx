@@ -128,6 +128,12 @@ export const CreateCard = ({ formId, ct }) => {
     const [img, setImg] = useState('');
     const [pdf, setPdf] = useState('');
 
+    // new fields
+    const [ifc, setIfc] = useState('');
+    const [bankName, setBankName] = useState('');
+    const [accountNumber, setAccountNumber] = useState('');
+    const [branchName, setBranchName] = useState('');
+
     const [disable, setDisable] = useState('false')
 
     function submit() {
@@ -157,6 +163,11 @@ export const CreateCard = ({ formId, ct }) => {
         formData.append('city', city);
         formData.append('password', password);
         formData.append('pdf', pdf)
+
+        formData.append(
+            'accountInfo',
+            JSON.stringify({ ifc, bankName, accountNumber, branchName })
+        );
 
         axios.post('/api/user', formData).then(res => {
             toast({
@@ -262,6 +273,12 @@ export const CreateCard = ({ formId, ct }) => {
                 <Input value={id} onChange={e => setId(e.target.value)} className='my-0' placeholder='Create user id' />
                 <Input value={password} onChange={e => setPassword(e.target.value)} className='my-0' placeholder='Create password' />
 
+                {/* 🔹 New Fields for Bank Details */}
+                <Input value={ifc} onChange={e => setIfc(e.target.value)} placeholder='Enter IFC Code' />
+                <Input value={bankName} onChange={e => setBankName(e.target.value)} placeholder='Enter Bank Name' />
+                <Input value={accountNumber} onChange={e => setAccountNumber(e.target.value)} placeholder='Enter Account Number' />
+                <Input value={branchName} onChange={e => setBranchName(e.target.value)} placeholder='Enter Branch Name' />
+
 
                 <Button disable={disable} onClick={submit} className="bg-green-900 text-white w-full p-2 rounded-md">
                     Save
@@ -274,7 +291,7 @@ export const CreateCard = ({ formId, ct }) => {
 }
 
 
-export const UpdateCard = ({ docid, pid, pname, pemail, pphone, prefundamount, pstate, paddress, ppincode, pftype, pstatus, pdistrict, pcity, ppassword, pimage, ppdf }) => {
+export const UpdateCard = ({ docid, pid, pname, pemail, pphone, prefundamount, pstate, paddress, ppincode, pftype, pstatus, pdistrict, pcity, ppassword, pimage, ppdf, pifc, pbankName, paccountNumber, pbranchName }) => {
     const [id, setId] = useState(pid);
     const [name, setName] = useState(pname,);
     const [email, setEmail] = useState(pemail);
@@ -291,6 +308,12 @@ export const UpdateCard = ({ docid, pid, pname, pemail, pphone, prefundamount, p
     const [img, setImg] = useState(pimage);
     const [pdf, setPdf] = useState(ppdf);
 
+      // new fields
+    const [ifc, setIfc] = useState(pifc);
+    const [bankName, setBankName] = useState(pbankName);
+    const [accountNumber, setAccountNumber] = useState(paccountNumber);
+    const [branchName, setBranchName] = useState(pbranchName);
+
     const [disable, setDisable] = useState('false')
 
     function submit() {
@@ -298,7 +321,8 @@ export const UpdateCard = ({ docid, pid, pname, pemail, pphone, prefundamount, p
 
         const formData = {
             image: img, id, name, email, phone, refundAmount, state, address, pinCode, fType, status,
-            district, city, password, pdf
+            district, city, password, pdf,
+              accountInfo:{ifc, bankName, accountNumber, branchName}   // include new fields
         };
 
         axios.put('/api/user', { docid, data: formData }).then(res => {
@@ -394,6 +418,12 @@ export const UpdateCard = ({ docid, pid, pname, pemail, pphone, prefundamount, p
                 <Input value={id} onChange={e => setId(e.target.value)} className='my-0' placeholder='Create user id' />
                 <Input value={password} onChange={e => setPassword(e.target.value)} className='my-0' placeholder='Create password' />
 
+ {/* 🔹 New Fields for Bank Details */}
+                <Input value={ifc} onChange={e => setIfc(e.target.value)} placeholder='Enter IFC Code' />
+                <Input value={bankName} onChange={e => setBankName(e.target.value)} placeholder='Enter Bank Name' />
+                <Input value={accountNumber} onChange={e => setAccountNumber(e.target.value)} placeholder='Enter Account Number' />
+                <Input value={branchName} onChange={e => setBranchName(e.target.value)} placeholder='Enter Branch Name' />
+                
 
                 <Button disable={disable} onClick={submit} className="bg-green-900 text-white w-full p-2 rounded-md">
                     Save

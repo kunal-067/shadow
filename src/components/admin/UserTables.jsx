@@ -150,7 +150,7 @@ export function SavedUserTable({ products }) {
                         {
                             (products && products.length > 0) ? (
                                 products.map(product => (
-                                    <SavedUserRow data={product} docid={product._id} key={product._id} id={product.id} password={product.password} city={product.city} state={product.state} name={product.name} email={product.email} phone={product.phone} fType={product.fType} pinCode={product.pinCode} />
+                                    <SavedUserRow data={product} docid={product._id} key={product._id} id={product.id} password={product.password} city={product.city} state={product.state} name={product.name} email={product.email} phone={product.phone} fType={product.fType} pinCode={product.pinCode}  />
                                 ))
                             ) : <TableRow><TableCell span='5'>No list</TableCell></TableRow>
                         }
@@ -203,7 +203,7 @@ const SavedUserRow = ({ docid, name, email, phone, fType, pinCode, id, password,
                 {fType}
             </TableCell>
             <TableCell className='flex gap-2'>
-                <UpdateCard docid={docid} pid={id} pname={name} pemail={email} pphone={phone} prefundamount={data.refundAmount} pstate={data.state} paddress={data.address} ppincode={pinCode} pftype={fType} ppassword={password} pstatus={data.status} pdistrict={data.district} pcity={data.city} pimage={data.image} ppdf={data.pdf}/>
+                <UpdateCard docid={docid} pid={id} pname={name} pemail={email} pphone={phone} prefundamount={data.refundAmount} pstate={data.state} paddress={data.address} ppincode={pinCode} pftype={fType} ppassword={password} pstatus={data.status} pdistrict={data.district} pcity={data.city} pimage={data.image} ppdf={data.pdf} pifc={data.accountInfo?.ifc} pbankName={data.accountInfo?.bankName} paccountNumber={data.accountInfo?.accountNumber} pbranchName={data.accountInfo?.branchName}/>
                 <Button onClick={deleteDoc} variant='destructive'>Delete</Button>
             </TableCell>
         </TableRow>
