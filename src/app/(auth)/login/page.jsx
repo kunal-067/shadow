@@ -36,8 +36,8 @@ function Login() {
         })
     }
     return (
-        <div className='w-full py-8 flex justify-center items-center'>
-            <div className='shadow-xl bg-white p-4 sm:p-10 rounded-xl w-full sm:w-[498px] '>
+        <div className='w-full py-8 md:py-20 flex flex-wrap gap-16 justify-evenly items-center '>
+            <div className='shadow-sm bg-white p-4 sm:p-10 rounded-xl w-full sm:w-[498px] '>
                 <p className='opacity-50 text-[14px] font-[400] text-center'>Welcome back !!</p>
                 <h2 className='text-[40px] text-center font-bold mb-4'>Sign In</h2>
 
@@ -53,7 +53,7 @@ function Login() {
                 </div>
 
                 <div className='flex flex-col w-full justify-center items-center gap-4 mt-6 mb-6'>
-                    <Button onClick={submit} className={`w-full h-12 text-[16px] align-middle py-2 text-white font-medium`}>
+                    <Button onClick={submit} className={`w-full h-12 text-[16px] bg-yellow-300 hover:bg-yellow-600 align-middle py-2 text-black  font-medium`}>
                         {submiting ? '...' : <>Sign In <ArrowRight className='ml-4 mt-1 size-5 ' /></>}
                     </Button>
                 </div>
@@ -63,6 +63,8 @@ function Login() {
                     <p className='text-[13px] opacity-40'>For your account password contact your support team.</p>
                 </div>
             </div>
+
+            <img src="/track-01.webp" alt="" className='md:h-[450px] md:w-[400px] lg:w-auto' />
         </div>
 
     )

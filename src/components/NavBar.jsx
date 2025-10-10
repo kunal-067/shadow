@@ -29,7 +29,7 @@ import { JoinUsCard } from './admin/ActionCards'
 
 const NavBar = () => {
     return (
-        <nav className="flex justify-between items-center px-6 md:px-12 py-6 shadow-md bg-white">
+        <nav className="flex justify-between items-center px-6 md:px-12 py-6 shadow-md shadow-gray-50 bg-white">
             {/* Logo */}
             <a href='/' className="flex items-center">
                 <Image src="/logo_header_tm.svg" alt="Logo" width={150} height={40} />
